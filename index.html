@@ -20,7 +20,7 @@
             <h1 class="text-lg font-bold text-orange-600 tracking-tight">តារាងតម្លៃបោះដុំនិងលក់រាយ 零售批发价</h1>
             <span id="last-update" class="text-[10px] text-gray-400 italic"></span>
         </div>
-        <input type="text" id="search-box" placeholder="ស្វែងរកឈ្មោះ ឬលេខកូដ...​ 搜索名称或代码……" 
+        <input type="text" id="search-box" placeholder="ស្វែងរកឈ្មោះ ឬលេខកូដ... 搜索名称或代码……" 
                class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white shadow-sm"
                oninput="handleSearch()">
     </header>
@@ -33,7 +33,7 @@
             <div id="category-list"></div>
         </aside>
 
-        <main id="app-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        <main id="app-container" class="flex-1 overflow-y-auto p-4 gap-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 bg-gray-50">
         </main>
     </div>
 
@@ -55,11 +55,12 @@
                         code: row[1] || '',
                         variant: row[2] || '',
                         salePrice: row[3] || '0',
-                        vipPrice: row[9] || '0',
+                        vipPrice: row[4] || '0',
                         category: row[5] || 'ផ្សេងៗ',
-                        inStock: row[6] !== '0', // ត្រួតពិនិត្យក្នុងស្តុក
+                        inStock: row[6] !== '0', 
                         priceUpdate: row[7] || '', 
-                        newStock: row[8] || '0'
+                        newStock: row[8] || '0',
+                        image: row[10] || '' 
                     };
                 });
 
@@ -67,6 +68,7 @@
                 renderProductList(allData);
             } catch (e) {
                 console.error("កំហុសក្នុងការអានទិន្នន័យ:", e);
+                document.getElementById('app-container').innerHTML = '<div class="col-span-full text-center text-red-500 p-4">មិនអាចផ្ទុកទិន្នន័យបាន។</div>';
             }
         }
 
@@ -74,7 +76,7 @@
             const uniqueCats = [...new Set(allData.map(i => i.category))];
             const categories = ['ទាំងអស់ 全部', 'ទំនិញថ្មី 新货', ...uniqueCats];
             document.getElementById('category-list').innerHTML = categories.map(cat => `
-                <button onclick="filter('${cat}', this)" class="category-item w-full text-left px-4 py-2.5 text-sm rounded-xl font-medium text-gray-700 mb-2 transition-all ${cat === 'ទាំងអស់' ? 'active' : ''}">
+                <button onclick="filter('${cat}', this)" class="category-item w-full text-left px-3 py-2 text-xs md:text-sm rounded-xl font-medium text-gray-700 mb-2 transition-all ${cat === 'ទាំងអស់' ? 'active' : ''}">
                     ${cat}
                 </button>
             `).join('');
@@ -103,30 +105,24 @@
             const container = document.getElementById('app-container');
             container.innerHTML = items.map(item => {
                 const isNew = item.newStock === '1';
-                const hasPriceUpdate = item.priceUpdate && item.priceUpdate.trim() !== '' && item.priceUpdate !== '0';
                 
                 return `
-                <div class="product-card bg-white p-4 rounded-2xl shadow-sm border border-gray-100 ${!item.inStock ? 'opacity-60 grayscale' : ''}">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex flex-col gap-1">
-                            <span class="font-bold text-gray-800 text-[16px]">${item.name}</span>
-                            <div class="flex gap-1 flex-wrap">
-                                ${isNew ? '<span class="text-[12px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-md shadow-sm">ទំនិញថ្មី 新货</span>' : ''}
-                                ${hasPriceUpdate ? '<span class="text-[12px] font-bold text-white bg-blue-500 px-2 py-0.5 rounded-md shadow-sm">តម្លៃថ្មី 新价</span>' : ''}
-                                ${!item.inStock ? '<span class="text-[12px] font-bold text-white bg-gray-800 px-2 py-0.5 rounded-md shadow-sm">អស់ស្តុក 没货</span>' : ''}
+                <div class="product-card bg-white p-2 md:p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col ${!item.inStock ? 'opacity-60 grayscale' : ''}">
+                    ${item.image ? `<div class="mb-2"><img src="${item.image}" alt="${item.name}" class="w-full aspect-square object-cover rounded-lg border border-gray-50" onerror="this.style.display='none'"></div>` : ''}
+                    
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div class="mb-2">
+                            <span class="font-bold text-gray-800 text-[13px] md:text-[14px] line-clamp-2">${item.name}</span>
+                            <div class="flex gap-1 flex-wrap mt-1">
+                                ${isNew ? '<span class="text-[9px] font-bold text-white bg-red-500 px-1 py-0.5 rounded">ថ្មី</span>' : ''}
                             </div>
                         </div>
-                        <span class="text-[11px] text-gray-500 font-bold bg-gray-100 px-2 py-1 rounded-lg">${item.code}</span>
-                    </div>
-                    <div class="text-[13px] text-gray-500 mb-3">${item.variant}</div>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-3">
-                        <div class="flex items-center gap-1">
-                            <span class="text-gray-400 text-[11px]">លក់រាយ 零售:</span>
-                            <span class="text-orange-600 font-bold text-[16px]">${item.salePrice}</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-gray-400 text-[11px]">VIP:</span>
-                            <span class="text-gray-900 font-bold text-[16px]">${item.vipPrice}</span>
+                        
+                        <div class="border-t border-gray-50 pt-2">
+                            <div class="flex justify-between items-center text-[11px] md:text-[12px]">
+                                <span class="text-orange-600 font-bold">${item.salePrice}</span>
+                                <span class="text-gray-900 font-bold">${item.vipPrice}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
